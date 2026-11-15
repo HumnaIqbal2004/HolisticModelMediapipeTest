@@ -1,0 +1,16 @@
+# Virtual environments
+.venv/
+mp_env/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE and OS files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

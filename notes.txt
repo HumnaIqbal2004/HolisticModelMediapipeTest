@@ -1,0 +1,185 @@
+cv2.IMREAD_COLOR: Loads a color image will be neglected. DEFAULT FLAG (-1)
+cv2.IMREAD_GRAYSCALE: Loads an image in grayscale mode (0)
+cv2.IMREAD_UNCHANGED : Loads image including alpha channgel (1)
+
+#import cv2
+
+img = cv2.imread("assets/haru-realization.png", 1)
+img = cv2.resize(img, (0, 0), fx=0.5, fy=2) (if u wanna scale it by a percentage or cv2.resize(img, (400, 400))) for just size px
+cv2.imshow('Cat', img)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+-----------
+
+modifying pixels 
+img = cv2.imread('assets/haru-realization.png')
+
+for i in range(100):
+    for j in range(img.shape[1]):
+        img[i][j] = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
+
+cv2.imshow('cat', img)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows
+
+COPY PASTING SECTIONS of image
+
+img = cv2.imread('assets/haru-realization.png')
+
+tag = img[500:700, 600:900]
+img[100:300, 200:500] = tag
+
+cv2.imshow('cat', img)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows
+
+----------
+
+video capture
+
+cap = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = cap.read()
+    width = int(cap.get(3))
+    height = int(cap.get(4))
+
+    image = np.zeros(frame.shape, np.uint8)
+    smaller_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+    image[:height//2, :width//2] = cv2.rotate(smaller_frame, cv2.ROTATE_180)
+    image[height//2:, :width//2] = smaller_frame
+    image[:height//2, width//2:] = cv2.rotate(smaller_frame, cv2.ROTATE_180)
+    image[height//2:, width//2:] = smaller_frame
+
+    cv2.imshow('frame', image)
+
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+cap.release()
+
+-----------
+
+
+DRAWING SHAPES 
+
+import numpy as np
+import cv2 
+
+cap = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = cap.read()
+    width = int(cap.get(3))
+    height = int(cap.get(4))
+
+    img = cv2.line(frame, (0, 0), (width, height), (255, 0, 0), 10)
+    img = cv2.line(img, (0, height), (width, 0), (0, 255, 0), 5)
+    img = cv2.rectangle(img, (100, 100), (200,200), (128, 128, 128), 5)
+    img = cv2.circle(img, (400, 400), 60, (0, 0, 255), -1)
+
+    font = cv2.FONT_HERSHEY_SCRIPT_SIMPLEX
+    img = cv2.putText(img, "Tim is Gay!", (10, height - 10), font, 2, (0, 0, 0), 5, lineType=cv2.LINE_AA)
+
+    cv2.imshow('frame', img)
+
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows
+
+------
+Pose Landmarker code 
+import math
+import cv2
+import numpy as np
+from time import time
+import mediapipe as mp
+import matplotlib.pyplot as pit
+
+BaseOptions = mp.tasks.BaseOptions
+PoseLandmarker = mp.tasks.vision.PoseLandmarker
+PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
+VisionRunningMode = mp.tasks.vision.RunningMode
+
+options = PoseLandmarkerOptions (
+    base_options = BaseOptions(model_asset_path = "pose_landmarker_full.task"),
+    running_mode = VisionRunningMode.VIDEO,
+    num_poses = 1
+)
+
+# Pairs of joint indices that connect to form bones
+POSE_CONNECTIONS = [
+    # Shoulders and arms
+    (11, 12), (11, 13), (13, 15), (15,21), (15, 17), (15, 19), (19, 17), # Left arm and hands
+    (12, 14), (14, 16), (16, 22), (16, 18), (16, 20), (18, 20),          # Right arm and hands
+    # Torso
+    (11, 23), (12, 24), (23, 24),
+    # Legs
+    (23, 25), (25, 27),            # Left leg
+    (24, 26), (26, 28),            # Right leg
+]
+
+
+
+cap = cv2.VideoCapture(0)
+
+with PoseLandmarker.create_from_options(options) as landmarker:
+    frame_timestamp_ms = 0
+
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            print("Couldn't get webcam")
+            break
+
+        frame = cv2.flip(frame, 1)
+
+        height, width, _ = frame.shape
+
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #opencv uses brg 
+
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #convert image into a mediapipe object
+
+        frame_timestamp_ms += 33
+
+        result = landmarker.detect_for_video(mp_image, frame_timestamp_ms)
+        
+
+        if result.pose_landmarks:
+            landmarks = result.pose_landmarks[0]
+
+            for start_idx, end_idx in POSE_CONNECTIONS: #so it walks through the pair in the pose_connects array
+                pt1 = landmarks[start_idx] 
+                pt2 = landmarks[end_idx]
+                x1, y1 = int(pt1.x * width), int(pt1.y * height)
+                x2, y2 = int(pt2.x * width), int(pt2.y * height)
+                cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green lines
+            
+            for lm in landmarks:
+                cx, cy = int(lm.x * width), int(lm.y * height)
+                cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
+
+        #Add a crash prevention
+
+        cv2.imshow("Webcam Pose", frame)
+
+        if cv2.waitKey(1) == ord('q'):
+            break
+
+cap.release()
+cv2.destroyAllWindows()
+
+
+
+
+
+
+
+
