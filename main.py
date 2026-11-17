@@ -88,53 +88,83 @@ with HolisticLandmarker.create_from_options(options) as landmarker:
 
             font()
         
-            height, width, _ = frame.shape
+            height, width, _ = frame.shape #grabs height and and width of video frame
         
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
         
-            frame_timestamp_ms += 33
+            frame_timestamp_ms += int(1000 / fps)
         
             result = landmarker.detect_for_video(mp_image, frame_timestamp_ms)
+            
         
             if result.face_landmarks:
                 face = result.face_landmarks
-        
+
+                inner_corner_right = ((face[78].x), (face[78]))
+                inner_corner_left = ((face[308].x), (face[308]))
+                center_top = ((face[13].x), (face[13]))
+                center_bottom = ((face[14].x), (face[14]))
+
                 for start_idx, end_idx in POSE_CONNECTIONS_FACE: #so it walks through the pair in the pose_connects array
                     pt1 = face[start_idx] 
                     pt2 = face[end_idx]
                     x1, y1 = int(pt1.x * width), int(pt1.y * height)
                     x2, y2 = int(pt2.x * width), int(pt2.y * height)
                     cv2.line(frame, (x1, y1), (x2, y2), (255, 255, 191), 1)  
-        
+                print(f"Current Frame: {current_frame} | Inner_corner_R: {inner_corner_right} | Inner_corner_L: {inner_corner_left} | Center_top: {center_top} | Center_bottom: {center_bottom}")
         
         
             if result.pose_landmarks:
                 body = result.pose_landmarks
-        
+
+                left_shoulder = ((body[11].x), (body[11].y))
+                right_shoulder = ((body[12].x), (body[12].y))
+                left_elbow = ((body[13].x), (body[13].y))
+                right_elbow = ((body[14].x), (body[14].y))
+                left_wrist = ((body[15].x), (body[15].y))
+                right_wrist = ((body[16].x), (body[16].y))
+
                 for start_idx, end_idx in POSE_CONNECTIONS_BODY:
                     pt1 = body[start_idx]
                     pt2 = body[end_idx]
                     x1, y1 = int(pt1.x * width), int(pt1.y * height)
                     x2, y2 = int(pt2.x * width), int(pt2.y * height)
                     cv2.line(frame, (x1, y1), (x2, y2), (0, 183, 235), 2)
-        
+                print(f"Current Frame: {current_frame} | Left_Elbow: {left_elbow} | Left_Wrist: {left_wrist} | Shoulders: {left_shoulder}, {right_shoulder} | Right_Elbow: {right_elbow} | Right_Wrist: {right_wrist}")
+
+                
                     
         
             if result.left_hand_landmarks:
                 lefthand = result.left_hand_landmarks
-                        
+
+                hand_wrist_L = (lefthand[0].x), (lefthand[0].y)
+                left_thumb = (lefthand[4].x), (lefthand[4].y)
+                left_poiner = (lefthand[8].x), (lefthand[8].y)
+                left_middle = (lefthand[12].x), (lefthand[12].y)
+                left_ring = (lefthand[16].x), (lefthand[16].y)
+                left_pinky = (lefthand[20].x), (lefthand[20].y)
+
+
                 for start_idx, end_idx in POSE_CONNECTIONS_HAND:
                     pt1 = lefthand[start_idx]
                     pt2 = lefthand[end_idx]
                     x1, y1 = int(pt1.x * width), int(pt1.y * height)
                     x2, y2 = int(pt2.x * width), int(pt2.y * height)
                     cv2.line(frame, (x1, y1), (x2, y2), (255, 255, 191), 2)
-                        
+                print(f"Current Frame: {current_frame} | Hand_wrist: {hand_wrist_L} | Left_thumb: {left_thumb} | Left_pointer: {left_poiner} | Left_middle: {left_middle} | Left_ring: {left_ring} | Left_pinky: {left_pinky}")  
                         
         
             if result.right_hand_landmarks:
                 righthand = result.right_hand_landmarks
+
+                hand_wrist_R = (righthand[0].x), (righthand[0].y)
+                right_thumb = (righthand[4].x), (righthand[4].y)
+                right_poiner = (righthand[8].x), (righthand[8].y)
+                right_middle = (righthand[12].x), (righthand[12].y)
+                right_ring = (righthand[16].x), (righthand[16].y)
+                right_pinky = (righthand[20].x), (righthand[20].y)
                                 
                 for start_idx, end_idx in POSE_CONNECTIONS_HAND:
                     pt1 = righthand[start_idx]
@@ -142,8 +172,9 @@ with HolisticLandmarker.create_from_options(options) as landmarker:
                     x1, y1 = int(pt1.x * width), int(pt1.y * height)
                     x2, y2 = int(pt2.x * width), int(pt2.y * height)
                     cv2.line(frame, (x1, y1), (x2, y2), (255, 255, 191), 2)
+                print(f"Current Frame: {current_frame} | Hand_wrist_R: {hand_wrist_R} | Right_thumb: {right_thumb} | Right_pointer: {right_poiner} | Right_middle: {right_middle} | Right_ring: {right_ring} | Right_pinky: {right_pinky}")
 
-            
+            print("---------------")
 
             
             delay = 0 if paused else int(1000/ fps)
