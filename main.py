@@ -177,7 +177,7 @@ with HolisticLandmarker.create_from_options(options) as landmarker:
                 frame_data["hand_wrist_R"] = (righthand[0].x), (righthand[0].y)
                 frame_data["right_thumb"] = (righthand[4].x), (righthand[4].y)
                 frame_data["right_thumb_knuckle"] = (righthand[2].x), (righthand[2].y)
-                frame_data["right_thumb_pointer"] = (righthand[3].x), (righthand[3].y)
+                frame_data["right_thumb_joint"] = (righthand[3].x), (righthand[3].y)
 
 
                 frame_data["right_pointer"] = (righthand[8].x), (righthand[8].y)
