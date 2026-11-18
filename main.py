@@ -63,7 +63,7 @@ POSE_CONNECTIONS_HAND = [
 
 ]
 
-cap = cv2.VideoCapture('assets/dance3.mp4')
+cap = cv2.VideoCapture('assets/dance.mp4')
 
 
 with HolisticLandmarker.create_from_options(options) as landmarker:
