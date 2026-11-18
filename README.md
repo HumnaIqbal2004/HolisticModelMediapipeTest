@@ -1,8 +1,5 @@
 # MediaPipe Pose Extraction + Motion Replay
 
-A project built with **Python**, **OpenCV**, **Mediapipe(HolisticModel)** to extract landmark coordinates from video 
-keyframes, write them to a CSV file, and reconstruct the skeleton frame by frame.
-
 ---
 
 # 📌 Project Overview
